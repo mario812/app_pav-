@@ -1,9 +1,11 @@
-//import 'package:firebase_core/firebase_core.dart';
-//import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const Registro());
 }
 
@@ -75,14 +77,23 @@ class _RegistrarState extends State<Registrar> {
                 height: 32.0,
               ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    _registrarUsuario(
-                        _controladorEmail.text, _controladorClave.text);
+                    try {
+                      await _registrarUsuario(
+                          _controladorEmail.text, _controladorClave.text);
+                      // si hay registro exitoso manejar aqui algo que lo indique
+                    } on FirebaseAuthException catch (e) {
+                      // manejar error de autenticación
+                    } catch (e) {
+                      // manejar otros errores
+                    } finally {
+                      // código que ejecuta con error o sin error
+                      _controladorClave.clear();
+                      _controladorEmail.clear();
+                    }
                   }
-                  print('pase por aqui');
-                  _controladorClave.clear();
-                  _controladorEmail.clear();
+                  print('pasé por aqui');
                 },
                 child: const Text('Registrarse'),
               )
@@ -94,15 +105,16 @@ class _RegistrarState extends State<Registrar> {
   }
 }
 
-void _registrarUsuario(String correo, String clave) async {
+_registrarUsuario(String correo, String clave) async {
   try {
-    final UserCredential =
+    final UserCredential userCredential =
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
       email: correo,
       password: clave,
     );
+    // registro exitoso (manejar el exito aqui)
   } on FirebaseAuthException catch (e) {
-    if (e.code == 'weak-passworde') {
+    if (e.code == 'weak-password') {
       print('la contraseña es muy débil');
     } else if (e.code == 'email-already-in-use') {
       print('el correo eléctronico ya está en uso');
