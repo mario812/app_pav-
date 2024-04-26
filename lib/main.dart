@@ -1,5 +1,5 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+//import 'package:firebase_core/firebase_core.dart';
+//import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -7,14 +7,27 @@ void main() {
   runApp(const Registro());
 }
 
-class Registro extends StatefulWidget {
+class Registro extends StatelessWidget {
   const Registro({super.key});
 
   @override
-  State<Registro> createState() => _RegistroState();
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Aplicación de Registro de Usuarios',
+      home: Registrar(),
+    );
+  }
 }
 
-class _RegistroState extends State<Registro> {
+class Registrar extends StatefulWidget {
+  const Registrar({super.key});
+
+  @override
+  State<Registrar> createState() => _RegistrarState();
+}
+
+class _RegistrarState extends State<Registrar> {
   final _formKey = GlobalKey<FormState>();
   final _controladorEmail = TextEditingController();
   final _controladorClave = TextEditingController();
@@ -35,7 +48,8 @@ class _RegistroState extends State<Registro> {
             children: <Widget>[
               TextFormField(
                 controller: _controladorEmail,
-                decoration: const InputDecoration(labelText: 'Correo electrónico'),
+                decoration:
+                    const InputDecoration(labelText: 'Correo electrónico'),
                 validator: (value) {
                   if (value!.isEmpty) {
                     return 'Por favor ingresa un correo eléctronico';
@@ -57,16 +71,20 @@ class _RegistroState extends State<Registro> {
                   return null;
                 },
               ),
-            const SizedBox(height: 32.0,),
-            ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _registrarUsuario(_controladorEmail.text, 
-                        _controladorClave.text );
-                }
-              },
-              child: const Text('Registrarse'),
-              
+              const SizedBox(
+                height: 32.0,
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _registrarUsuario(
+                        _controladorEmail.text, _controladorClave.text);
+                  }
+                  print('pase por aqui');
+                  _controladorClave.clear();
+                  _controladorEmail.clear();
+                },
+                child: const Text('Registrarse'),
               )
             ],
           ),
@@ -77,20 +95,19 @@ class _RegistroState extends State<Registro> {
 }
 
 void _registrarUsuario(String correo, String clave) async {
- try {
-  final UserCredential = await
-FirebaseAuth.instance.createUserWithEmailAndPassword(
-  email: correo, 
-  password: clave,
-  );
- } on FirebaseAuthException catch (e) {
+  try {
+    final UserCredential =
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: correo,
+      password: clave,
+    );
+  } on FirebaseAuthException catch (e) {
     if (e.code == 'weak-passworde') {
       print('la contraseña es muy débil');
     } else if (e.code == 'email-already-in-use') {
-      print('el correo eléctronico ya está en uso');0
+      print('el correo eléctronico ya está en uso');
     } else {
       print('error al registrar el correo');
     }
- }
+  }
 }
-
