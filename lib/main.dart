@@ -7,46 +7,30 @@ import 'package:flutter/material.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // if (kIsWeb) {
-  //   // Inicialización para web
-  //   await Firebase.initializeApp(
-  //     [
-  //       FirebaseAppOptions(
-  //         apiKey: "AIzaSyC3jT1f7qEOFcfMWzeBwiK8XTkKNcSA-pw",
-  //         appId: "1:798407068989:web:f7dea619ca9506987a8954",
-  //         messagingSenderId: "798407068989",
-  //         projectId: "proyecto-pad",
-  //         storageBucket: "proyecto-pad.appspot.com",
-  //       )
-  //     ],
-  //   );
-  // } else {
-  //   // Inicialización para dispositivos móviles (opcional)
-  // }
-  runApp(const Registro());
+  runApp(const Logueo());
 }
 
-class Registro extends StatelessWidget {
-  const Registro({super.key});
+class Logueo extends StatelessWidget {
+  const Logueo({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Aplicación de Registro de Usuarios',
-      home: Registrar(),
+      title: 'Aplicación de Logueo de Usuarios',
+      home: Loguear(),
     );
   }
 }
 
-class Registrar extends StatefulWidget {
-  const Registrar({super.key});
+class Loguear extends StatefulWidget {
+  const Loguear({super.key});
 
   @override
-  State<Registrar> createState() => _RegistrarState();
+  State<Loguear> createState() => _LoguearState();
 }
 
-class _RegistrarState extends State<Registrar> {
+class _LoguearState extends State<Loguear> {
   final _formKey = GlobalKey<FormState>();
   final _controladorEmail = TextEditingController();
   final _controladorClave = TextEditingController();
@@ -55,8 +39,7 @@ class _RegistrarState extends State<Registrar> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registro de Usuario'),
-        // aqui centrado y color de la barra
+        title: const Text('Login'),
       ),
       body: Form(
         key: _formKey,
@@ -71,72 +54,56 @@ class _RegistrarState extends State<Registrar> {
                     const InputDecoration(labelText: 'Correo electrónico'),
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return 'Por favor ingresa un correo eléctronico';
+                    return 'Por favor, ingresa un correo electrónico.';
                   }
                   return null;
                 },
               ),
-              const SizedBox(
-                height: 16.0,
-              ),
+              const SizedBox(height: 16.0),
               TextFormField(
                 controller: _controladorClave,
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'Contraseña'),
                 validator: (value) {
                   if (value!.isEmpty) {
-                    return 'Por favor ingresa una contraseña';
+                    return 'Por favor, ingresa una contraseña.';
                   }
                   return null;
                 },
               ),
-              const SizedBox(
-                height: 32.0,
-              ),
+              const SizedBox(height: 32.0),
               ElevatedButton(
-                onPressed: () async {
+                onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    try {
-                      await _registrarUsuario(
-                          _controladorEmail.text, _controladorClave.text);
-                      // si hay registro exitoso manejar aqui algo que lo indique
-                    } on FirebaseAuthException catch (e) {
-                      // manejar error de autenticación
-                    } catch (e) {
-                      // manejar otros errores
-                    } finally {
-                      // código que ejecuta con error o sin error
-                      _controladorClave.clear();
-                      _controladorEmail.clear();
-                    }
+                    _iniciarSesion(
+                        _controladorEmail.text, _controladorClave.text);
                   }
-                  print('pasé por aqui');
                 },
-                child: const Text('Registrarse'),
-              )
+                child: const Text('Iniciar sesión'),
+              ),
             ],
           ),
         ),
       ),
     );
   }
-}
 
-_registrarUsuario(String correo, String clave) async {
-  try {
-    final UserCredential userCredential =
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-      email: correo,
-      password: clave,
-    );
-    // registro exitoso (manejar el exito aqui)
-  } on FirebaseAuthException catch (e) {
-    if (e.code == 'weak-password') {
-      print('la contraseña es muy débil');
-    } else if (e.code == 'email-already-in-use') {
-      print('el correo eléctronico ya está en uso');
-    } else {
-      print('error al registrar el correo');
+  void _iniciarSesion(String correo, String clave) async {
+    try {
+      final userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: correo,
+        password: clave,
+      );
+      // Navegar a la pantalla principal o realizar la acción correspondiente
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        print('El usuario no existe.');
+      } else if (e.code == 'wrong-password') {
+        print('La contraseña es incorrecta.');
+      } else {
+        print('Error al iniciar sesión: ${e.code}');
+      }
     }
   }
 }
